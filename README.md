@@ -21,7 +21,7 @@ Enhance a text input for entering numeric values, with up/down buttons
 ```
 <script type="text/javascript">
         $(function () {
-            $("#spin").spinner({decimals:2,step:0.5});
+            $("#spin").spinner({decimals:2,step:0.5,min:-20,max:20});
         });
 </script>
 ```
