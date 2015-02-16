@@ -24,7 +24,9 @@
              this._spinnerTimer;
              this._buttonsContainer;
              this._createContainer = function() {
-                 this._element.wrap('<div class="input-group spinner">');
+                 if (this._element.closest(".spinner").length == 0) {
+                     this._element.wrap('<div class="input-group spinner">');                 }
+
                  this._container = this._element.closest(".spinner");
              };
              this._createButtons = function() {
@@ -50,10 +52,15 @@
                      this.downButton.prop("disabled", true);
                  }
              };
+             this._triggerEvent = function(eventName){
+                 this._element.trigger(eventName);
+             },
              this._initEvents = function() {
                  var butoane = $(this.upButton).add(this.downButton);
+
                  butoane.mousedown((function(e) {
                      var btn = e.currentTarget;
+                     this._stopSpinnerTimer();
                      this._checkValue();
                      if (btn == this.upButton.get(0)) {
                          this._increaseValue(this._settings.step);
@@ -80,13 +87,45 @@
                  }).bind(this));
                  butoane.mouseup((function() {
                      this._stopSpinnerTimer();
+                     this._triggerEvent("change");
                  }).bind(this));
                  butoane.mouseout((function() {
                      this._stopSpinnerTimer();
+                     this._triggerEvent("change");
                  }).bind(this));
                  this._element.on("blur", (function() {
                      this._checkValue();
                      this._checkButtons();
+                 }).bind(this));
+
+                 this._element.on('keydown', (function(event) {
+                     var keyCode = event.keyCode || event.which;
+
+                     this._stopSpinnerTimer();
+                     this._checkValue();
+                     if (keyCode === 38) {
+                         this._increaseValue(this._settings.step);
+                         this._spinnerTimer = setInterval((function() {
+                             if (!this._increaseValue(this._settings.step)) {
+                                 this._stopSpinnerTimer();
+                             }
+                         }).bind(this), this._settings.stepUpdateRate);
+                         event.preventDefault();
+                     }
+                     else if (keyCode === 40) {
+                         this._increaseValue(-this._settings.step);
+                         this._spinnerTimer = setInterval((function() {
+                             if (!this._increaseValue(-this._settings.step)) {
+                                 this._stopSpinnerTimer();
+                             }
+                         }).bind(this), this._settings.stepUpdateRate);
+                         event.preventDefault();
+                     }
+                 }).bind(this));
+                 this._element.on('keyup', (function(ev) {
+                     this._stopSpinnerTimer();
+                     this._checkButtons();
+                     this._triggerEvent("change");
                  }).bind(this));
              };
              this._checkValue = function() {
